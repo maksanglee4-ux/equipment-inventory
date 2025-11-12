@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card p-4 shadow-lg">
+            <div class="text-center mb-4">
+                <i class="bi bi-shield-lock" style="font-size: 3rem; color: #0d6efd;"></i>
+                <h3 class="mt-3">Вход в систему</h3>
+            </div>
+
+            <form method="post">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    <label class="form-label">Логин (ФИО)</label>
+                    {{ form.username(class="form-control form-control-lg", placeholder="Введите ФИО") }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    {{ form.password(class="form-control form-control-lg", placeholder="Введите пароль") }}
+                </div>
+
+                <div class="d-grid">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="{{ url_for('guest_scan') }}" class="text-muted">
+                    <i class="bi bi-camera"></i> Гостевой доступ (только просмотр)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

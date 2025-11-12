@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card p-4">
+    <h3><i class="bi bi-geo-alt"></i> Перемещение оборудования</h3>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">{{ form.new_location.label }} {{ form.new_location(class="form-control") }}</div>
+        <button class="btn btn-success"><i class="bi bi-geo-alt"></i> Переместить</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Отмена</a>
+    </form>
+</div>
+{% endblock %}

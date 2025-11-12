@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card p-4">
+    <h3><i class="bi bi-gear-wide"></i> Информация об оборудовании</h3>
+    <p><strong>Название:</strong> {{ equip.name }}</p>
+    <p><strong>Штрих-код:</strong> {{ equip.barcode }}</p>
+    <p><strong>Местоположение:</strong> {{ equip.location }}</p>
+    <p><strong>Статус:</strong> {{ equip.status }}</p>
+    <p><strong>МОЛ:</strong> {{ equip.responsible_person }}</p>
+    <p><strong>Дата поступления:</strong> {{ equip.acquisition_date }}</p>
+    <p><strong>Дата списания:</strong> {{ equip.writeoff_date or 'Нет' }}</p>
+    <p><strong>Инвентарный номер:</strong> {{ equip.inventory_number or 'Нет' }}</p>
+    <p><strong>Стоимость:</strong> {{ equip.cost or 'Нет' }}</p>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Назад</a>
+</div>
+{% endblock %}

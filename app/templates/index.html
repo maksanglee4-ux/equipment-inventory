@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-card p-4">
+    <h3 class="mb-4 text-center">Оборудование</h3>
+
+    <!-- ПОИСК ПО НАЗВАНИЮ -->
+    <div class="mb-4">
+        <input type="text" id="searchInput" class="form-control" placeholder="Поиск по названию..." onkeyup="filterTable()">
+    </div>
+
+    <!-- ФИЛЬТРЫ -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                    Место нахождения
+                </button>
+                <div class="dropdown-menu p-3" style="width: 320px;">
+                    <div class="filter-search">
+                        <input type="text" id="locationSearch" placeholder="Поиск места..." onkeyup="filterDropdown('locationSearch', 'locationFilter')">
+                    </div>
+                    <div id="locationFilter" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+        {% if current_user.is_admin %}
+        <div class="col-md-6 mb-3">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                    МОЛ
+                </button>
+                <div class="dropdown-menu p-3" style="width: 320px;">
+                    <div class="filter-search">
+                        <input type="text" id="molSearch" placeholder="Поиск МОЛ..." onkeyup="filterDropdown('molSearch', 'molFilter')">
+                    </div>
+                    <div id="molFilter" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ТАБЛИЦА -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle" id="equipmentTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Наименование</th>
+                    <th onclick="sortTable(1)">Штрих-код</th>
+                    <th onclick="sortTable(2)">МОЛ</th>
+                    <th onclick="sortTable(3)">Место</th>
+                    <th>Статус</th>
+                    <th style="width: 1%;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equip in equipments %}
+                <tr data-location="{{ equip.location or '' }}" data-mol="{{ equip.responsible_person or '' }}">
+                    <td><strong>{{ equip.name }}</strong></td>
+                    <td><code>{{ equip.barcode }}</code></td>
+                    <td>{{ equip.responsible_person or '—' }}</td>
+                    <td>{{ equip.location or '—' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'danger' if equip.status == 'списано' else 'success' }}">
+                            {{ equip.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons d-flex gap-1">
+                            {% if current_user.is_admin %}
+                                <a href="{{ url_for('edit_equipment', equip_id=equip.id) }}" class="btn btn-sm btn-warning" title="Редактировать">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ url_for('delete_equipment', equip_id=equip.id) }}" 
+                                   class="btn btn-sm btn-danger" 
+                                   onclick="return confirm('Удалить {{ equip.name }}?')" title="Удалить">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('transfer_equipment', equip_id=equip.id) }}" class="btn btn-sm btn-success" title="Передать">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                </a>
+                                <a href="{{ url_for('move_equipment', equip_id=equip.id) }}" class="btn btn-sm btn-info" title="Переместить">
+                                    <i class="bi bi-truck"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const locations = [...new Set(Array.from(document.querySelectorAll('tr[data-location]')).map(r => r.dataset.location).filter(Boolean))];
+    const mols = [...new Set(Array.from(document.querySelectorAll('tr[data-mol]')).map(r => r.dataset.mol).filter(Boolean))];
+
+    // ФИЛЬТР МЕСТ
+    const locationFilter = document.getElementById('locationFilter');
+    locations.forEach(loc => {
+        const div = document.createElement('div');
+        div.className = 'form-check';
+        div.innerHTML = `<input class="form-check-input" type="checkbox" value="${loc}" checked onchange="applyFilters()">
+                         <label class="form-check-label">${loc}</label>`;
+        locationFilter.appendChild(div);
+    });
+
+    // ФИЛЬТР МОЛ
+    {% if current_user.is_admin %}
+    const molFilter = document.getElementById('molFilter');
+    mols.forEach(mol => {
+        const div = document.createElement('div');
+        div.className = 'form-check';
+        div.innerHTML = `<input class="form-check-input" type="checkbox" value="${mol}" checked onchange="applyFilters()">
+                         <label class="form-check-label">${mol}</label>`;
+        molFilter.appendChild(div);
+    });
+    {% endif %}
+
+    // ПОИСК В ФИЛЬТРАХ
+    function filterDropdown(inputId, containerId) {
+        const input = document.getElementById(inputId).value.toLowerCase();
+        const items = document.querySelectorAll(`#${containerId} .form-check`);
+        items.forEach(item => {
+            const label = item.querySelector('label').textContent.toLowerCase();
+            item.style.display = label.includes(input) ? '' : 'none';
+        });
+    }
+
+    // ПОИСК ПО НАЗВАНИЮ
+    function filterTable() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#equipmentTable tbody tr');
+        rows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            row.style.display = name.includes(input) ? '' : 'none';
+        });
+        applyFilters();
+    }
+
+    // ПРИМЕНЕНИЕ ФИЛЬТРОВ
+    function applyFilters() {
+        const selectedLocations = Array.from(document.querySelectorAll('#locationFilter input:checked')).map(cb => cb.value);
+        const selectedMols = {% if current_user.is_admin %}Array.from(document.querySelectorAll('#molFilter input:checked')).map(cb => cb.value){% else %}[]{% endif %};
+
+        const rows = document.querySelectorAll('#equipmentTable tbody tr');
+        rows.forEach(row => {
+            if (row.style.display === 'none') return;
+
+            const loc = row.dataset.location;
+            const mol = row.dataset.mol;
+
+            const locMatch = selectedLocations.length === 0 || selectedLocations.includes(loc);
+            const molMatch = selectedMols.length === 0 || selectedMols.includes(mol);
+
+            row.style.display = (locMatch && molMatch) ? '' : 'none';
+        });
+    }
+
+    // СОРТИРОВКА
+    function sortTable(n) {
+        const table = document.getElementById("equipmentTable");
+        let switching = true, dir = "asc", i;
+        while (switching) {
+            switching = false;
+            const rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                let shouldSwitch = false;
+                const x = rows[i].getElementsByTagName("TD")[n].innerHTML.toLowerCase();
+                const y = rows[i + 1].getElementsByTagName("TD")[n].innerHTML.toLowerCase();
+                if (dir === "asc" ? x > y : x < y) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            } else if (dir === "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
+</script>
+{% endblock %}

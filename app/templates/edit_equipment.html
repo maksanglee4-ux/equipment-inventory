@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card p-4">
+    <h3><i class="bi bi-pencil"></i> Редактирование оборудования</h3>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">{{ form.name.label }} {{ form.name(class="form-control") }}</div>
+        <div class="mb-3">{{ form.barcode.label }} {{ form.barcode(class="form-control") }}</div>
+        <div class="mb-3">{{ form.location.label }} {{ form.location(class="form-control") }}</div>
+        <div class="mb-3">{{ form.status.label }} {{ form.status(class="form-select") }}</div>
+        <div class="mb-3">{{ form.inventory_number.label }} {{ form.inventory_number(class="form-control") }}</div>
+        <div class="mb-3">{{ form.cost.label }} {{ form.cost(class="form-control") }}</div>
+        <button class="btn btn-success"><i class="bi bi-save"></i> Сохранить</button>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Отмена</a>
+    </form>
+</div>
+{% endblock %}

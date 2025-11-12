@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card p-4">
+    <h3><i class="bi bi-gear-wide"></i> Информация (гость)</h3>
+    <p><strong>Название:</strong> {{ equip.name }}</p>
+    <p><strong>Штрих-код:</strong> {{ equip.barcode }}</p>
+    <p><strong>Местоположение:</strong> {{ equip.location }}</p>
+    <p><strong>Статус:</strong> {{ equip.status }}</p>
+    <p><strong>Дата поступления:</strong> {{ equip.acquisition_date }}</p>
+    <p><strong>Дата списания:</strong> {{ equip.writeoff_date or 'Нет' }}</p>
+    <a href="{{ url_for('guest_scan') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Назад</a>
+</div>
+{% endblock %}
